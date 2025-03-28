@@ -8,7 +8,7 @@ where
 {
 	key: K,
 	value: V,
-	pointed_node: Option<Node<K, V, M>>,
+	pointed_node: Option<Box<Node<K, V, M>>>,
 }
 
 impl<K, V, const M: usize> std::cmp::PartialEq for Key<K, V, M>
@@ -45,9 +45,9 @@ where
 
 impl<K, V, const M: usize> Key<K, V, M>
 where
-	K: Ord 
+	K: Ord
 {
-	pub fn new(key: K, value: V, pointed_node: Option<Node<K, V, M>>) -> Self {
+	pub fn new(key: K, value: V, pointed_node: Option<Box<Node<K, V, M>>>) -> Self {
 		Self {
 			key,
 			value,
@@ -63,8 +63,20 @@ where
 		&self.value
 	}
 
-	fn pointed_node(&self) -> Option<&Node<K, V, M>> {
-		self.pointed_node.as_ref()
+	pub fn pointed_node(&self) -> Option<&Node<K, V, M>> {
+		Some(self.pointed_node.as_ref()?.as_ref())
+	}
+
+	pub fn pointed_node_mut(&mut self) -> Option<&mut Node<K, V, M>> {
+		Some(self.pointed_node.as_mut()?.as_mut())
+	}
+
+	pub fn set_pointed_node(&mut self, pointed_node: Box<Node<K, V, M>>) {
+		self.pointed_node = Some(pointed_node);
+	}
+
+	pub fn unset_pointed_node(&mut self) -> Option<Box<Node<K, V, M>>> {
+		std::mem::replace(&mut self.pointed_node, None)
 	}
 
 }

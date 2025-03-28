@@ -1,12 +1,20 @@
 mod key;
+mod iterator;
 
 
 use std::sync::Arc;
+use iterator::{ChildIterator, KeysIterator};
 use key::Key;
 
 static MAXIMUM_KEYS: usize = 4;
 
 //----------[ NODE ]----------//
+
+#[derive(PartialEq, Eq, Clone, Copy)]
+pub enum NodeType {
+	Internal,
+	Leaf
+}
 
 /// This struct contains the indexes with the Nodes pointed by those indexes, and the last node
 ///
@@ -18,45 +26,177 @@ static MAXIMUM_KEYS: usize = 4;
 /// 		5->[3, 4],	// Index 5 pointing on a node
 /// 		[6, 7]	// Last node
 /// 	]
+
 #[derive()]
 pub struct Node<K, V, const M: usize>
 where
 	K: Ord
 {
-	keys: Vec<Arc<Key<K, V, M>>>,
+	keys: Vec<Key<K, V, M>>,
 
-	last_node: Option<Arc<Node<K, V, M>>>,
+	type_: NodeType,
+
+	last_node: Option<Box<Node<K, V, M>>>,
+
+	parent: Key<K, V, M>,
 }
 
 impl<K, V, const M: usize> Node<K, V, M>
 where
 	K: Ord
 {
-	pub fn new() -> Self {
+	pub fn merge_childs(&mut self, index: usize) -> Option<&Node<K, V, M>> {
+		// normally checking if self is a Leaf node
+		// but if everithing is done correctly, no need to
+
+		{
+			// Remove the key that was linking the node we will remove
+			let mut key = self.remove_key(index)?;
+
+			// node we will remove
+			let left_node = key.pointed_node_mut()?;
+
+			let key_count = self.keys.len();
+			let right_key_index = index + 1;
+
+			// the node where (the key linking the removed node + all the removed node's keys) will be sent
+			let right_node = match self.get_mut(right_key_index) {
+				Some(key) => key.pointed_node_mut()?,
+				None if right_key_index == key_count && key_count > 0  => self.last_node.as_mut().unwrap().as_mut(),
+				None => return None,
+			};
+
+			// sending the removed node's keys
+			while let Some(key) = left_node.pop_last() {
+				right_node.insert(key);
+			}
+
+			// sending the key linking the removed node
+			right_node.insert(key);
+
+			Some(())
+		}?;
+
+		match index == self.keys.len() { // check if merged node is the last of the node  
+			true => {
+				Some(self.last_node.as_ref().unwrap().as_ref())
+			},
+			false => {
+				self.get(index).unwrap().pointed_node()
+			}
+		}
+
+	}
+
+	pub fn split_into_parent<'a>(&mut self, new_parent: &'a mut Key<K, V, M>) -> &'a mut Key<K, V, M> {
+		let mut new_node = Node::new(self.type_, new_parent);
+
+		let keys_to_move = self.keys.len() / 2;
+
+		for _ in 0..keys_to_move {
+			let removed_key = self.pop_last().unwrap();
+
+			new_node.insert(removed_key);
+		}
+
+		new_parent.set_pointed_node(new_node);
+
+		new_parent
+	}
+
+	pub fn split(&mut self) -> Key<K, V, M> {
+
+	}
+}
+
+impl<K, V, const M: usize> Node<K, V, M>
+where
+	K: Ord
+{
+	pub fn new(type_: NodeType, parent: Key<K, V, M>) -> Self {
 		Self {
+			type_,
 			keys: Vec::with_capacity(MAXIMUM_KEYS + 1),
 			last_node: None,
+			parent
 		}
 	}
 
-	pub fn insert(&mut self, key: Arc<Key<K, V, M>>) {
+	pub fn insert(&mut self, key: Key<K, V, M>) -> &Key<K, V, M> {
 		let search = self.keys.binary_search(&key);
+
+		match search {
+			// If Leaf Node
+			Err(index) | Ok(index) if self.type_ == NodeType::Leaf => {
+				// Leaf Node, inserting the key in this node				
+				self.keys.insert(index, key);
+				&self.keys[index]
+			},
+
+			// If not Leaf Node
+			Err(index) | Ok(index) => {
+				let child = self.keys[index].pointed_node_mut().unwrap();
+				child.insert(key)
+			},
+		}
+	}
+
+	pub fn find(&self, key: Arc<Key<K, V, M>>) -> Option<&Key<K, V, M>> {
+		let search = self.keys.binary_search(&key);
+
 		match search {
 			Err(index) => {
-				// Not found, index is the place were the key can be inserted
+				// Key not found
 	
-				self.keys.insert(index, key);
+				if let Some(next_child) = self.keys[index].pointed_node() {
+					return next_child.find(key);
+				} else {
+					// Leaf node (no child)
+					return None;
+				}
 			},
 			Ok(index) => {
-				// Key already present, the index is the place of the duplicate key
-				// TODO: be sure inserting a duplicate value is ok
+				// Key found
 
-				self.keys.insert(index, key);
+				return Some(&self.keys[index])
 			}
 		};
 	}
 
-	pub fn insert_keys(&mut self, keys: Vec<Arc<Key<K, V, M>>>) {
+	pub fn get(&self, index: usize) -> Option<&Key<K, V, M>> {
+		self.keys.get(index)
+	}
+
+	pub fn get_mut(&mut self, index: usize) -> Option<&mut Key<K, V, M>> {
+		self.keys.get_mut(index)
+	}
+
+	pub fn remove_key(&mut self, index: usize) -> Option<Key<K, V, M>> {
+
+		if index >= self.keys.len() {
+			return None
+		}
+
+		let key = self.keys.remove(index);
+
+		return Some(key);
+	}
+
+	pub fn pop_first(&mut self) -> Option<Key<K, V, M>> {
+		self.remove_key(0)
+	}
+
+	pub fn pop_middle(&mut self) -> Option<Key<K, V, M>> {
+		let index = self.keys.len() / 2;
+		
+		self.remove_key(index)
+	}
+
+	pub fn pop_last(&mut self) -> Option<Key<K, V, M>> {
+		self.keys.pop()
+	}
+
+	pub fn insert_keys(&mut self, keys: Vec<Key<K, V, M>>) {
 		for key in keys {
 			self.insert(key);
 		}
@@ -78,7 +218,7 @@ where
 	}
 
 	pub fn child_count(&self) -> usize {
-		if self.is_leaf() {
+		if self.type_() == NodeType::Leaf {
 			// leaf node -> no childs
 			0
 		} else {
@@ -87,9 +227,18 @@ where
 		}
 	}
 
-	pub fn is_leaf(&self) -> bool {
-		self.last_node.is_none()
+	pub fn type_(&self) -> NodeType {
+		self.type_
 	}
+
+	pub fn key_iter<'a>(&self) -> KeysIterator<'_, K, V, M> {
+		KeysIterator::new(self)
+	}
+
+	pub fn child_iter<'a>(&self) -> ChildIterator<'_, K, V, M> {
+		ChildIterator::new(self)
+	}
+	
 }
 
 //------------------------------//
