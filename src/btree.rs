@@ -1,5 +1,5 @@
 use crate::{
-    key::Key, node::{Node, NodeType}
+    key::Key, node::Node
 };
 
 pub struct Btree<K, V, const S: usize = 4>
