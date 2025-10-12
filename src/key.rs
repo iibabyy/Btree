@@ -34,7 +34,7 @@ where
     K: Ord,
 {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.key.cmp(&other.key))
+        Some(self.cmp(other))
     }
 }
 

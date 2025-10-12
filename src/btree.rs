@@ -33,12 +33,12 @@ where
         })
     }
 
-    pub fn empty(&self) -> bool {
-        self.size == 0
-    }
-
     pub fn len(&self) -> usize {
         self.size
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.size == 0
     }
 }
 
@@ -59,8 +59,8 @@ where
     }
 
     pub fn split_root(&mut self) {
-        let keys = std::mem::replace(&mut self.root.keys, vec![]);
-        let last_node = std::mem::replace(&mut self.root.last_node, None);
+        let keys = std::mem::take(&mut self.root.keys);
+        let last_node = Option::take(&mut self.root.last_node);
         let keys_type = last_node.as_ref().unwrap().type_;
 
         let mid = self.root.len() / 2;
@@ -70,7 +70,7 @@ where
         let mut middle_key = iter.next().unwrap();
         let right_keys = iter.by_ref().take(mid).collect();
 
-        let middle_key_pointed_node = std::mem::replace(&mut middle_key.pointed_node, None);
+        let middle_key_pointed_node = Option::take(&mut middle_key.pointed_node);
 
         let left_node = Node::with(left_keys, middle_key_pointed_node, keys_type);
         let right_node = Node::with(right_keys, last_node, keys_type);

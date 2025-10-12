@@ -68,23 +68,9 @@ where
     pub const fn len(&self) -> usize {
         self.keys.len()
     }
-}
 
-impl<K, V, const D: usize> Node<K, V, D>
-where
-    K: Ord,
-{
-    pub(crate) fn insert(&mut self, key: Key<K, V, D>) -> Option<V> {
-        match self.keys.binary_search(&key) {
-            Ok(_) => {}
-            Err(_) => {}
-        }
-
-        todo!()
-    }
-
-    pub(crate) fn remove(&mut self, key: K) -> Option<V> {
-        todo!()
+    pub const fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 }
 
@@ -92,7 +78,25 @@ impl<K, V, const D: usize> Node<K, V, D>
 where
     K: Ord,
 {
-    pub(crate) fn child_node_for(&mut self, key: Key<K, V, D>) -> Option<NodePointer<K, V, D>> {
+    pub(crate) fn insert(&mut self, _key: Key<K, V, D>) -> Option<V> {
+        // match self.keys.binary_search(&key) {
+        //     Ok(_) => {}
+        //     Err(_) => {}
+        // }
+
+        todo!()
+    }
+
+    pub(crate) fn remove(&mut self, _key: K) -> Option<V> {
+        todo!()
+    }
+}
+
+impl<K, V, const D: usize> Node<K, V, D>
+where
+    K: Ord,
+{
+    pub(crate) fn child_node_for(&mut self, _key: Key<K, V, D>) -> Option<NodePointer<K, V, D>> {
         if self.is_leaf() {
             return None;
         }
