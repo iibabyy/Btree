@@ -3,12 +3,12 @@ name = "Btree"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-name="lib_btree"
-path="lib/lib.rs"
-
 [[bin]]
-name="Btree"
-path="src/main.rs"
+name="btree"
+path="src/lib.rs"
+
+# [lib]
+# name="example"
+# path="lib/lib.rs"
 
 [dependencies]
