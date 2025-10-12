@@ -30,7 +30,7 @@ where
             type_,
 
             min_number_of_keys: D - 1,
-            max_number_of_keys: D * 2 - 1
+            max_number_of_keys: D * 2 - 1,
         }
     }
 
@@ -45,7 +45,7 @@ where
             type_,
 
             min_number_of_keys: D - 1,
-            max_number_of_keys: D * 2 - 1
+            max_number_of_keys: D * 2 - 1,
         }
     }
 
@@ -60,15 +60,14 @@ where
     pub(crate) fn overflow(&self) -> bool {
         self.keys.len() > self.max_number_of_keys
     }
-    
+
     pub(crate) fn underflow(&self) -> bool {
         self.keys.len() < self.min_number_of_keys
     }
-    
+
     pub const fn len(&self) -> usize {
         self.keys.len()
     }
-    
 }
 
 impl<K, V, const D: usize> Node<K, V, D>

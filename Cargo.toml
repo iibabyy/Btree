@@ -5,7 +5,7 @@ edition = "2021"
 
 [[bin]]
 name="btree"
-path="src/lib.rs"
+path="src/main.rs"
 
 # [lib]
 # name="example"

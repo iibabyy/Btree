@@ -1,4 +1,4 @@
-use crate::{node::Node};
+use crate::node::Node;
 
 #[derive(Debug)]
 pub struct Key<K, V, const D: usize>

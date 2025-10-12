@@ -1,5 +1,8 @@
-
-use crate::{key::Key, node::{Node, NodeType}, utils::error::BtreeError};
+use crate::{
+    key::Key,
+    node::{Node, NodeType},
+    utils::error::BtreeError,
+};
 
 const MINIMUM_LOWER_BOUND: usize = 2;
 const MAXIMUM_LOWER_BOUND: usize = 2048;
@@ -75,7 +78,11 @@ where
         middle_key.pointed_node = Some(left_node.boxed());
         let new_root_last_node = right_node.boxed();
 
-        let new_root = Node::with(vec![middle_key], Some(new_root_last_node), NodeType::Internal);
+        let new_root = Node::with(
+            vec![middle_key],
+            Some(new_root_last_node),
+            NodeType::Internal,
+        );
 
         self.root = new_root;
     }
