@@ -7,7 +7,7 @@ pub mod key;
 pub mod btree;
 pub mod utils;
 
-type NodePointer<K, V, const S: usize> = Option<Box<Node<K, V, S>>>;
+type NodePointer<K, V, const D: usize> = Option<Box<Node<K, V, D>>>;
 
 pub fn main() {
 

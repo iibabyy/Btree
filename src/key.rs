@@ -1,17 +1,17 @@
 use crate::{node::Node};
 
 #[derive(Debug)]
-pub struct Key<K, V, const S: usize>
+pub struct Key<K, V, const D: usize>
 where
     K: Ord,
 {
     pub(crate) key: K,
     pub(crate) value: V,
-    pub(crate) pointed_node: Option<Box<Node<K, V, S>>>,
+    pub(crate) pointed_node: Option<Box<Node<K, V, D>>>,
 }
 
-impl<K, V, const S: usize> Eq for Key<K, V, S> where K: Ord {}
-impl<K, V, const S: usize> PartialEq for Key<K, V, S>
+impl<K, V, const D: usize> Eq for Key<K, V, D> where K: Ord {}
+impl<K, V, const D: usize> PartialEq for Key<K, V, D>
 where
     K: Ord,
 {
@@ -20,7 +20,7 @@ where
     }
 }
 
-impl<K, V, const S: usize> Ord for Key<K, V, S>
+impl<K, V, const D: usize> Ord for Key<K, V, D>
 where
     K: Ord,
 {
@@ -29,7 +29,7 @@ where
     }
 }
 
-impl<K, V, const S: usize> PartialOrd for Key<K, V, S>
+impl<K, V, const D: usize> PartialOrd for Key<K, V, D>
 where
     K: Ord,
 {
@@ -38,7 +38,7 @@ where
     }
 }
 
-impl<K, V, const S: usize> Key<K, V, S>
+impl<K, V, const D: usize> Key<K, V, D>
 where
     K: Ord,
 {
