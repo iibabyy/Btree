@@ -49,4 +49,8 @@ where
             pointed_node: None,
         }
     }
+
+    pub(crate) fn set_value(&mut self, value: V) {
+        self.value = value;
+    }    
 }

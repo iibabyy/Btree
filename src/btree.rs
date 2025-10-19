@@ -59,21 +59,21 @@ where
     }
 
     pub fn split_root(&mut self) {
-        let keys = std::mem::take(&mut self.root.keys);
-        let last_node = Option::take(&mut self.root.last_node);
-        let keys_type = last_node.as_ref().unwrap().type_;
+        let root_keys = std::mem::take(&mut self.root.keys);
+        let root_last_node = Option::take(&mut self.root.last_node);
+        let root_keys_type = root_last_node.as_ref().unwrap().type_; // all the keys 
 
         let mid = self.root.len() / 2;
 
-        let mut iter = keys.into_iter();
+        let mut iter = root_keys.into_iter();
         let left_keys = iter.by_ref().take(mid).collect();
         let mut middle_key = iter.next().unwrap();
         let right_keys = iter.by_ref().take(mid).collect();
 
         let middle_key_pointed_node = Option::take(&mut middle_key.pointed_node);
 
-        let left_node = Node::with(left_keys, middle_key_pointed_node, keys_type);
-        let right_node = Node::with(right_keys, last_node, keys_type);
+        let left_node = Node::with(left_keys, middle_key_pointed_node, root_keys_type);
+        let right_node = Node::with(right_keys, root_last_node, root_keys_type);
 
         middle_key.pointed_node = Some(left_node.boxed());
         let new_root_last_node = right_node.boxed();
