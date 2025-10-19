@@ -28,7 +28,7 @@ where
         }
 
         Ok(Self {
-            root: Node::new(NodeType::Leaf),
+            root: Node::default(NodeType::Leaf),
             size: 0,
         })
     }
@@ -52,39 +52,10 @@ where
         self.root.insert(key);
 
         if self.root.overflow() {
-            self.split_root();
+            self.root.split();
         }
 
         todo!()
-    }
-
-    pub fn split_root(&mut self) {
-        let root_keys = std::mem::take(&mut self.root.keys);
-        let root_last_node = Option::take(&mut self.root.last_node);
-        let root_keys_type = root_last_node.as_ref().unwrap().type_; // all the keys 
-
-        let mid = self.root.len() / 2;
-
-        let mut iter = root_keys.into_iter();
-        let left_keys = iter.by_ref().take(mid).collect();
-        let mut middle_key = iter.next().unwrap();
-        let right_keys = iter.by_ref().take(mid).collect();
-
-        let middle_key_pointed_node = Option::take(&mut middle_key.pointed_node);
-
-        let left_node = Node::with(left_keys, middle_key_pointed_node, root_keys_type);
-        let right_node = Node::with(right_keys, root_last_node, root_keys_type);
-
-        middle_key.pointed_node = Some(left_node.boxed());
-        let new_root_last_node = right_node.boxed();
-
-        let new_root = Node::with(
-            vec![middle_key],
-            Some(new_root_last_node),
-            NodeType::Internal,
-        );
-
-        self.root = new_root;
     }
 
     pub fn remove(&mut self, key: K) -> Option<V> {
