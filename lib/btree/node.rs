@@ -32,7 +32,7 @@ pub struct Node<K, V, const M: usize>
 where
 	K: Ord
 {
-	keys: Vec<Key<K, V, M>>,
+	keys: VecDeque<Key<K, V, M>>,
 
 	type_: NodeType,
 
@@ -196,7 +196,7 @@ where
 		self.keys.pop()
 	}
 
-	pub fn insert_keys(&mut self, keys: Vec<Key<K, V, M>>) {
+	pub fn insert_keys(&mut self, keys: VecDeque<Key<K, V, M>>) {
 		for key in keys {
 			self.insert(key);
 		}

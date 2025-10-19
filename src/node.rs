@@ -1,3 +1,5 @@
+use std::collections::VecDeque;
+
 use crate::{key::Key, NodePointer};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
@@ -15,7 +17,7 @@ pub(crate) struct Node<K, V, const D: usize>
 where
     K: Ord,
 {
-    pub keys: Vec<Key<K, V, D>>,
+    pub keys: VecDeque<Key<K, V, D>>,
     pub last_node: NodePointer<K, V, D>,
     pub type_: NodeType,
 
@@ -28,7 +30,7 @@ where
     K: Ord,
 {
     pub(crate) fn new(
-        keys: Vec<Key<K, V, D>>,
+        keys: VecDeque<Key<K, V, D>>,
         last_node: NodePointer<K, V, D>,
         type_: NodeType,
     ) -> Self {
@@ -42,9 +44,7 @@ where
         }
     }
 
-    pub(crate) fn leaf(
-        keys: Vec<Key<K, V, D>>,
-    ) -> Self {
+    pub(crate) fn leaf(keys: VecDeque<Key<K, V, D>>) -> Self {
         Self {
             keys,
             last_node: None,
@@ -55,10 +55,7 @@ where
         }
     }
 
-    pub(crate) fn internal(
-        keys: Vec<Key<K, V, D>>,
-        last_node: NodePointer<K, V, D>,
-    ) -> Self {
+    pub(crate) fn internal(keys: VecDeque<Key<K, V, D>>, last_node: NodePointer<K, V, D>) -> Self {
         Self {
             keys,
             last_node,
@@ -71,7 +68,7 @@ where
 
     pub fn default(type_: NodeType) -> Self {
         Self {
-            keys: Vec::with_capacity(D),
+            keys: VecDeque::with_capacity(D),
             last_node: None,
             type_,
 
@@ -122,11 +119,19 @@ where
         todo!()
     }
 
+    pub fn slide_one_key_to_left_sibling(&mut self, sibling: &mut Self, parent_key: &mut Key<K, V, D>) {
+        if let Some(mut left_key) = self.keys.pop_front() {
+            let prev_left_key_pointed_node = left_key.pointed_node.take();
+            let prev_sibling_last_node = sibling.last_node.take();
+            let prev_parent_key_pointed_node = parent_key.pointed_node.take();
+            let prev_sibling_last_node = sibling.last_node.take();
+        }
+    }
+
     pub fn split(&mut self) {
         let keys = std::mem::take(&mut self.keys);
         let last_node = Option::take(&mut self.last_node);
         let keys_type = last_node.as_ref().unwrap().type_; // all the keys are the same type
-
 
         /*--- split left/middle/right keys ---*/
 
@@ -138,7 +143,6 @@ where
 
         let middle_key_pointed_node = Option::take(&mut middle_key.pointed_node);
 
-
         /*--- construct new node ---*/
 
         let left_node = Node::new(left_keys, middle_key_pointed_node, keys_type);
@@ -146,8 +150,8 @@ where
 
         middle_key.pointed_node = Some(left_node.boxed());
         let new_last_node = right_node.boxed();
-        let mut new_keys = Vec::with_capacity(D);
-        new_keys.push(middle_key);
+        let mut new_keys = VecDeque::with_capacity(D);
+        new_keys.push_back(middle_key);
 
         *self = Node::internal(new_keys, Some(new_last_node));
     }

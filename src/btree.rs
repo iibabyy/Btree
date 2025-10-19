@@ -62,5 +62,3 @@ where
         self.root.remove(key)
     }
 }
-
-impl<K, V, const D: usize> Btree<K, V, D> where K: Ord {}
