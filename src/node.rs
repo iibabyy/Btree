@@ -8,10 +8,6 @@ pub enum NodeType {
     Leaf,
 }
 
-impl NodeType {
-    pub(crate) fn new(&self) {}
-}
-
 #[derive(Debug)]
 pub(crate) struct Node<K, V, const D: usize>
 where
@@ -119,12 +115,33 @@ where
         todo!()
     }
 
-    pub fn slide_one_key_to_left_sibling(&mut self, sibling: &mut Self, parent_key: &mut Key<K, V, D>) {
+    pub fn slide_one_key_to_left_sibling(&mut self, left_sibling: &mut Self, parent_key: &mut Key<K, V, D>) -> Result<(), ()> {
         if let Some(mut left_key) = self.keys.pop_front() {
-            let prev_left_key_pointed_node = left_key.pointed_node.take();
-            let prev_sibling_last_node = sibling.last_node.take();
-            let prev_parent_key_pointed_node = parent_key.pointed_node.take();
-            let prev_sibling_last_node = sibling.last_node.take();
+            let prev_left_key_pointed_node = std::mem::replace(&mut left_key.pointed_node, parent_key.pointed_node.take());
+            parent_key.pointed_node = left_sibling.last_node.take();
+            left_sibling.last_node = prev_left_key_pointed_node;
+
+            let prev_parent_key = parent_key.replace(left_key);
+            left_sibling.keys.push_back(prev_parent_key);
+
+            Ok(())
+        } else {   
+            Err(())
+        }
+    }
+
+    pub fn slide_one_key_to_right_sibling(&mut self, right_sibling: &mut Self, parent_key: &mut Key<K, V, D>) -> Result<(), ()> {
+        if let Some(mut right_key) = self.keys.pop_back() {
+            let prev_right_key_pointed_node = std::mem::replace(&mut right_key.pointed_node, parent_key.pointed_node.take());
+            parent_key.pointed_node = self.last_node.take();
+            self.last_node = prev_right_key_pointed_node;
+
+            let prev_parent_key = parent_key.replace(right_key);
+            right_sibling.keys.push_front(prev_parent_key);
+
+            Ok(())
+        } else {
+            Err(())
         }
     }
 
