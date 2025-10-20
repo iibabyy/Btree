@@ -57,4 +57,8 @@ where
     pub(crate) fn replace(&mut self, other: Self) -> Self {
         std::mem::replace(self, other)
     }
+
+    pub(crate) fn replace_value(&mut self, other: Self) -> V {
+        std::mem::replace(&mut self.value, other.value)
+    }
 }

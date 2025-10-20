@@ -2,6 +2,11 @@
 pub enum BtreeError {
     LowerBoundTooLow,
     LowerBoundTooLarge,
+
+}
+
+pub enum InsertionError {
+    
 }
 
 impl std::error::Error for BtreeError {}

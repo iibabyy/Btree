@@ -1,5 +1,4 @@
 use crate::{
-    key::Key,
     node::{Node, NodeType},
     utils::error::BtreeError,
 };
@@ -47,12 +46,9 @@ where
     K: Ord,
 {
     pub fn insert(&mut self, key: K, value: V) -> Option<V> {
-        let key = Key::new(key, value);
-
-        self.root.insert(key);
+        self.root.insert(key, value);
 
         if self.root.overflow() {
-            self.root.split();
         }
 
         todo!()
